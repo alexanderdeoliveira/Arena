@@ -3,6 +3,7 @@ package com.alexander.arenatest.view;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -23,6 +24,9 @@ public class PullRequestsActivity extends AppCompatActivity {
     private RecyclerView rvPrs;
     private ProgressBar progressBar;
     private Snackbar errorSnack;
+    private LinearLayoutManager layoutManager;
+    private Parcelable listState;
+    private final String LIST_STATE = "listState";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +48,7 @@ public class PullRequestsActivity extends AppCompatActivity {
         rvPrs = findViewById(R.id.rv_pull_requests);
         rvPrs.setHasFixedSize(true);
 
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager = new LinearLayoutManager(this);
         rvPrs.setLayoutManager(layoutManager);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvPrs.getContext(),
                 layoutManager.getOrientation());
@@ -94,6 +98,29 @@ public class PullRequestsActivity extends AppCompatActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+
+        listState = layoutManager.onSaveInstanceState();
+        state.putParcelable(LIST_STATE, listState);
+    }
+
+    protected void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+
+        if(state != null)
+            listState = state.getParcelable(LIST_STATE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (listState != null) {
+            layoutManager.onRestoreInstanceState(listState);
         }
     }
 }

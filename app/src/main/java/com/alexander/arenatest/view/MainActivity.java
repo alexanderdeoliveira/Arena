@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
+
 import com.alexander.arenatest.R;
 import com.alexander.arenatest.util.EnumUtil;
 import com.alexander.arenatest.util.UiUtil;
@@ -22,7 +24,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private SwipeRefreshLayout swipeRefresh;
     private Snackbar initialErrorSnack;
     private Snackbar errorSnack;
-
+    private LinearLayoutManager layoutManager;
+    private Parcelable listState;
+    private final String LIST_STATE = "listState";
 
 
     @Override
@@ -47,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         rvRepositories = findViewById(R.id.rv_repositories);
         rvRepositories.setHasFixedSize(false);
 
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager = new LinearLayoutManager(this);
         rvRepositories.setLayoutManager(layoutManager);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvRepositories.getContext(),
                 layoutManager.getOrientation());
@@ -105,5 +109,28 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     @Override
     public void onRefresh() {
         viewModel.refresh();
+    }
+
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+
+        listState = layoutManager.onSaveInstanceState();
+        state.putParcelable(LIST_STATE, listState);
+    }
+
+    protected void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+
+        if(state != null)
+            listState = state.getParcelable(LIST_STATE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (listState != null) {
+            layoutManager.onRestoreInstanceState(listState);
+        }
     }
 }
